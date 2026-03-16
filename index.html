@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piia — Sinu fantaasia algab siit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0908;
+    --black2: #141210;
+    --black3: #1e1b18;
+    --champagne: #f0dfa8;
+    --champagne-light: #f7edcc;
+    --champagne-pale: #fdf8ee;
+    --gold: #c9a84c;
+    --gold-dim: #8a6e2e;
+    --cream: #ede0c4;
+    --text-muted: #8a8070;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--champagne-pale);
+    font-family: var(--font-body);
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--champagne);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.18s ease, width 0.25s, height 0.25s;
+    opacity: 0.6;
+  }
+  body:hover .cursor { opacity: 1; }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 9000;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(10,9,8,0.95) 0%, transparent 100%);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--champagne);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--champagne); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 120px 48px 80px;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  /* Radial glow behind hero text */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 500px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Floating decorative lines */
+  .hero-line {
+    position: absolute;
+    background: var(--gold-dim);
+    opacity: 0.25;
+  }
+  .hero-line.h { height: 1px; width: 120px; }
+  .hero-line.v { width: 1px; height: 80px; }
+  .hl1 { top: 30%; left: 8%; }
+  .hl2 { bottom: 30%; right: 8%; }
+  .vl1 { top: 20%; right: 18%; }
+  .vl2 { bottom: 20%; left: 18%; }
+
+  .hero-tag {
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 9vw, 110px);
+    font-weight: 300;
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    color: var(--champagne-light);
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--champagne);
+    display: block;
+  }
+  .hero-subtitle {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-muted);
+    max-width: 440px;
+    line-height: 1.75;
+    margin-bottom: 52px;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--champagne);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 16px 40px;
+    transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+  .hero-cta:hover {
+    background: var(--gold);
+    color: var(--black);
+    box-shadow: 0 0 40px rgba(201,168,76,0.25);
+  }
+  .hero-cta .arrow { transition: transform 0.2s; }
+  .hero-cta:hover .arrow { transform: translateX(5px); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 48px;
+    margin: 0 auto;
+    max-width: 800px;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--gold-dim); opacity: 0.35; }
+  .divider-gem {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    opacity: 0.7;
+  }
+
+  /* ── INTRO STRIP ── */
+  .intro-strip {
+    padding: 80px 48px;
+    text-align: center;
+  }
+  .intro-strip p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(22px, 3.5vw, 36px);
+    font-weight: 300;
+    color: var(--cream);
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  .intro-strip p span { color: var(--gold); }
+
+  /* ── GALLERY ── */
+  .gallery-section {
+    padding: 60px 48px 80px;
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .section-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 300;
+    color: var(--champagne-light);
+    line-height: 1.1;
+  }
+  .section-title em { font-style: italic; color: var(--champagne); }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    background: var(--black3);
+    aspect-ratio: 4/5;
+    cursor: none;
+  }
+
+  .gallery-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: var(--black2);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  .gallery-item:hover .gallery-placeholder { background: var(--black3); }
+
+  /* abstract shimmer bg */
+  .gallery-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 30% 60%, rgba(201,168,76,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 70% 30%, rgba(240,223,168,0.05) 0%, transparent 60%);
+  }
+
+  .gp-icon {
+    width: 36px; height: 36px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    position: relative;
+    z-index: 1;
+  }
+  .gp-icon svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+  .gp-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+  }
+
+  .gallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10,9,8,0.85) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.35s;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px;
+  }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+  .gallery-overlay span {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--champagne);
+  }
+
+  /* ── SERVICES ── */
+  .services-section {
+    padding: 80px 48px;
+    background: var(--black2);
+    position: relative;
+    overflow: hidden;
+  }
+  .services-section::before {
+    content: 'Piia';
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: var(--font-display);
+    font-size: 200px;
+    font-weight: 600;
+    color: rgba(201,168,76,0.03);
+    pointer-events: none;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .service-card {
+    background: var(--black);
+    padding: 44px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+    border: 1px solid rgba(201,168,76,0.08);
+  }
+  .service-card:hover { background: var(--black3); }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .service-card:hover::before { opacity: 1; }
+
+  .service-number {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+  .service-name {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--champagne-light);
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .service-name em { font-style: italic; color: var(--champagne); }
+  .service-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .service-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    border-top: 1px solid rgba(201,168,76,0.15);
+    padding-top: 20px;
+    margin-top: auto;
+  }
+  .service-price {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--champagne);
+  }
+  .service-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .service-tag {
+    margin-left: auto;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 4px 10px;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 80px 48px;
+    text-align: center;
+  }
+  .how-steps {
+    display: flex;
+    gap: 0;
+    max-width: 900px;
+    margin: 56px auto 0;
+    position: relative;
+  }
+  .how-steps::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: calc(16.66% + 24px);
+    right: calc(16.66% + 24px);
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+    opacity: 0.4;
+  }
+  .how-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 16px;
+  }
+  .step-num {
+    width: 48px; height: 48px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--champagne);
+    background: var(--black);
+    position: relative;
+    z-index: 1;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .how-step:hover .step-num {
+    background: var(--gold);
+    color: var(--black);
+    box-shadow: 0 0 24px rgba(201,168,76,0.3);
+  }
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--champagne-light);
+  }
+  .step-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    max-width: 160px;
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden;
+    padding: 40px 0;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 60px;
+    width: max-content;
+    animation: marquee 22s linear infinite;
+  }
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .marquee-gem {
+    width: 5px; height: 5px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  /* ── CTA BAND ── */
+  .cta-band {
+    padding: 100px 48px;
+    text-align: center;
+    background: var(--black2);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-band::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-band-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 300;
+    color: var(--champagne-light);
+    line-height: 1.1;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .cta-band-title em { font-style: italic; color: var(--champagne); }
+  .cta-band-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 44px;
+    position: relative;
+    z-index: 1;
+  }
+  .cta-band-number {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--champagne);
+    border: 1px solid rgba(201,168,76,0.4);
+    padding: 18px 52px;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    text-decoration: none;
+  }
+  .cta-band-number:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 48px rgba(201,168,76,0.2);
+    color: var(--champagne);
+  }
+
+  .cta-cost {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--champagne);
+  }
+  .footer-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.4; transform: scaleY(1); }
+    50%      { opacity: 1;   transform: scaleY(1.2); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .hero, .intro-strip, .gallery-section, .services-section, .how-section, .cta-band, footer {
+      padding-left: 24px; padding-right: 24px;
+    }
+    .footer-note { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Piia</a>
+  <ul class="nav-links">
+    <li><a href="#gallery">Galerii</a></li>
+    <li><a href="#services">Teenused</a></li>
+    <li><a href="#contact">Helista</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-line h hl1"></div>
+  <div class="hero-line h hl2"></div>
+  <div class="hero-line v vl1"></div>
+  <div class="hero-line v vl2"></div>
+
+  <p class="hero-tag">✦ Saadaval kohe &nbsp;·&nbsp; Privaatne &amp; diskreetne ✦</p>
+  <h1 class="hero-title">
+    Sinu fantaasia<br>
+    <em>algab siit</em>
+  </h1>
+  <p class="hero-subtitle">
+    Astu maailma, kus sosistused on maagilised ja mäng on lõputu.
+    Piia on siin — võrgutav, vaimukas ja täielikult sinu päralt.
+  </p>
+  <a href="#contact" class="hero-cta">
+    Helista Piiale
+    <span class="arrow">→</span>
+  </a>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Keri</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item">
+      <span>Mänguline vestlus</span><div class="marquee-gem"></div>
+      <span>Privaatne &amp; diskreetne</span><div class="marquee-gem"></div>
+      <span>Fantaasia täitub</span><div class="marquee-gem"></div>
+      <span>Saadaval iga päev</span><div class="marquee-gem"></div>
+      <span>Sinu soovid, kuuldud</span><div class="marquee-gem"></div>
+      <span>Unustamatuid hetki</span><div class="marquee-gem"></div>
+      <span>Mänguline vestlus</span><div class="marquee-gem"></div>
+      <span>Privaatne &amp; diskreetne</span><div class="marquee-gem"></div>
+      <span>Fantaasia täitub</span><div class="marquee-gem"></div>
+      <span>Saadaval iga päev</span><div class="marquee-gem"></div>
+      <span>Sinu soovid, kuuldud</span><div class="marquee-gem"></div>
+      <span>Unustamatuid hetki</span><div class="marquee-gem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO STRIP -->
+<section class="intro-strip reveal">
+  <p>
+    "Hääl, mis <span>võlub</span>, mõistus, mis kiusab,
+    ja mänguline vaim, mis muudab iga hetke
+    <span>vastupandamatult maitsvaks.</span>"
+  </p>
+</section>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+
+<!-- GALLERY -->
+<section class="gallery-section" id="gallery">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">Galerii</p>
+    <h2 class="section-title">Pilguheit <em>Piiale</em></h2>
+  </div>
+
+  <div class="gallery-grid reveal">
+    <div class="gallery-item">
+      <div class="gallery-placeholder">
+        <div class="gp-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <span class="gp-label">Sinu foto</span>
+      </div>
+      <div class="gallery-overlay"><span>Võluv</span></div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-placeholder">
+        <div class="gp-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <span class="gp-label">Sinu foto</span>
+      </div>
+      <div class="gallery-overlay"><span>Mänguline</span></div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-placeholder">
+        <div class="gp-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <span class="gp-label">Sinu foto</span>
+      </div>
+      <div class="gallery-overlay"><span>Salapärane</span></div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-placeholder">
+        <div class="gp-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <span class="gp-label">Sinu foto</span>
+      </div>
+      <div class="gallery-overlay"><span>Kütkestav</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+
+<!-- SERVICES / PRICING -->
+<section class="services-section" id="services">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">Teenused &amp; Hinnad</p>
+    <h2 class="section-title">Vali oma <em>elamus</em></h2>
+  </div>
+
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <p class="service-number">01</p>
+      <h3 class="service-name">Kiire<br><em>kiusatus</em></h3>
+      <p class="service-desc">Flirtiv soojendus, mis paneb su kujutlusvõime lendama. Ideaalne, kui soovid maitsta Piia vastupandamatut võlu.</p>
+      <div class="service-price-row">
+        <span class="service-price">€1.99</span>
+        <span class="service-unit">/ min</span>
+        <span class="service-tag">10 min</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal">
+      <p class="service-number">02</p>
+      <h3 class="service-name">Sügav<br><em>fantaasia</em></h3>
+      <p class="service-desc">Anna ennast pikemale, kütkestavalemale elamusele. Piia juhatab sind läbi sosistuste, lugude ja kirglike üllatuste maailma.</p>
+      <div class="service-price-row">
+        <span class="service-price">€1.79</span>
+        <span class="service-unit">/ min</span>
+        <span class="service-tag">30 min</span>
+      </div>
+    </div>
+
+    <div class="service-card reveal">
+      <p class="service-number">03</p>
+      <h3 class="service-name">Täielik<br><em>elamus</em></h3>
+      <p class="service-desc">Terve tund pühendatuna täielikult sinu fantaasiale. Rollimäng, vestlus, iha — kõik, mida su kujutlusvõime nõuab.</p>
+      <div class="service-price-row">
+        <span class="service-price">€1.49</span>
+        <span class="service-unit">/ min</span>
+        <span class="service-tag">60 min</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- CTA BAND -->
+<section class="cta-band" id="contact">
+  <h2 class="cta-band-title reveal">Valmis <em>helistama?</em></h2>
+  <p class="cta-band-sub reveal">Saadaval iga päev — privaatne, diskreetne ja täielikult sinu jaoks.</p>
+  <a class="cta-band-number reveal" href="tel:+358001234567">+358 00 123 4567</a>
+  <p class="cta-cost reveal">Kõne hind: €1.49–€1.99 / min sõltuvalt valitud paketist &nbsp;·&nbsp; Tavalised operaatoritasud võivad lisanduda</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Piia</div>
+  <div class="footer-note">
+    Ainult täiskasvanutele (18+) &nbsp;·&nbsp; Kõik kõned on 100% privaatsed &amp; diskreetsed<br>
+    © 2025 Piia. Kõik õigused kaitstud.
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animateCursor() {
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+    rx += (mx - rx) * 0.13;
+    ry += (my - ry) * 0.13;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+  document.querySelectorAll('a, button, .gallery-item, .service-card, .how-step').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '20px';
+      cursor.style.height = '20px';
+      ring.style.width = '56px';
+      ring.style.height = '56px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '12px';
+      cursor.style.height = '12px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
